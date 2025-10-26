@@ -42,7 +42,6 @@ class ApiClient {
   }) async {
     try {
       final headers = await _getHeaders(includeAuth: requiresAuth);
-      print('API Request: GET $url'); // Debug logging
       final response = await http
           .get(Uri.parse(url), headers: headers)
           .timeout(
@@ -55,12 +54,10 @@ class ApiClient {
               );
             },
           );
-      print('Response Status: ${response.statusCode}'); // Debug logging
       return _handleResponse(response, parser);
     } on ApiException {
       rethrow;
     } catch (e) {
-      print('API Error: $e'); // Debug logging
       throw ApiException(
         code: 'NETWORK_ERROR',
         message: 'Network error: ${e.toString()}',
@@ -77,8 +74,6 @@ class ApiClient {
   }) async {
     try {
       final headers = await _getHeaders(includeAuth: requiresAuth);
-      print('API Request: POST $url'); // Debug logging
-      print('Body: $body'); // Debug logging
       final response = await http
           .post(Uri.parse(url), headers: headers, body: jsonEncode(body))
           .timeout(
@@ -91,13 +86,10 @@ class ApiClient {
               );
             },
           );
-      print('Response Status: ${response.statusCode}'); // Debug logging
-      print('Response Body: ${response.body}'); // Debug logging
       return _handleResponse(response, parser);
     } on ApiException {
       rethrow;
     } catch (e) {
-      print('API Error: $e'); // Debug logging
       throw ApiException(
         code: 'NETWORK_ERROR',
         message: 'Network error: ${e.toString()}',

@@ -47,14 +47,11 @@ class AuthService {
         requiresAuth: false,
       );
 
-      print('Register response: $response'); // Debug logging
       final user = User.fromJson(response['user']);
       await _saveUser(user);
 
-      print('Registration successful, user: ${user.email}'); // Debug logging
       return user;
     } catch (e) {
-      print('Register error: $e'); // Debug logging
       rethrow;
     }
   }
@@ -67,17 +64,14 @@ class AuthService {
         requiresAuth: false,
       );
 
-      print('Login response: $response'); // Debug logging
       final token = response['token'] as String;
       final user = User.fromJson(response['user']);
 
       await _saveToken(token);
       await _saveUser(user);
 
-      print('Login successful, user: ${user.email}'); // Debug logging
       return user;
     } catch (e) {
-      print('Login error: $e'); // Debug logging
       rethrow;
     }
   }
