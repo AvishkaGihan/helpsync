@@ -34,16 +34,29 @@ class HelpSyncApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    // Check authentication after the first frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AuthProvider>().checkAuthentication();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
-        // Check authentication on app start
-        authProvider.checkAuthentication();
-
         if (authProvider.isLoading) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),

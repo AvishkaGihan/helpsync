@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'auth_service.dart';
 
 class ApiException implements Exception {
   final String code;
@@ -18,13 +17,16 @@ class ApiException implements Exception {
 }
 
 class ApiClient {
-  final AuthService _authService = AuthService();
+  final Future<String?> Function() _getTokenCallback;
+
+  ApiClient({Future<String?> Function()? getTokenCallback})
+    : _getTokenCallback = getTokenCallback ?? (() => Future.value(null));
 
   Future<Map<String, String>> _getHeaders({bool includeAuth = true}) async {
     final headers = {'Content-Type': 'application/json'};
 
     if (includeAuth) {
-      final token = await _authService.getToken();
+      final token = await _getTokenCallback();
       if (token != null) {
         headers['Authorization'] = 'Bearer $token';
       }
@@ -40,12 +42,28 @@ class ApiClient {
   }) async {
     try {
       final headers = await _getHeaders(includeAuth: requiresAuth);
-      final response = await http.get(Uri.parse(url), headers: headers);
+      print('API Request: GET $url'); // Debug logging
+      final response = await http
+          .get(Uri.parse(url), headers: headers)
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw ApiException(
+                code: 'TIMEOUT',
+                message: 'Request timeout - cannot connect to server',
+                statusCode: 0,
+              );
+            },
+          );
+      print('Response Status: ${response.statusCode}'); // Debug logging
       return _handleResponse(response, parser);
+    } on ApiException {
+      rethrow;
     } catch (e) {
+      print('API Error: $e'); // Debug logging
       throw ApiException(
         code: 'NETWORK_ERROR',
-        message: 'Network error occurred',
+        message: 'Network error: ${e.toString()}',
         statusCode: 0,
       );
     }
@@ -59,16 +77,30 @@ class ApiClient {
   }) async {
     try {
       final headers = await _getHeaders(includeAuth: requiresAuth);
-      final response = await http.post(
-        Uri.parse(url),
-        headers: headers,
-        body: jsonEncode(body),
-      );
+      print('API Request: POST $url'); // Debug logging
+      print('Body: $body'); // Debug logging
+      final response = await http
+          .post(Uri.parse(url), headers: headers, body: jsonEncode(body))
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw ApiException(
+                code: 'TIMEOUT',
+                message: 'Request timeout - cannot connect to server',
+                statusCode: 0,
+              );
+            },
+          );
+      print('Response Status: ${response.statusCode}'); // Debug logging
+      print('Response Body: ${response.body}'); // Debug logging
       return _handleResponse(response, parser);
+    } on ApiException {
+      rethrow;
     } catch (e) {
+      print('API Error: $e'); // Debug logging
       throw ApiException(
         code: 'NETWORK_ERROR',
-        message: 'Network error occurred',
+        message: 'Network error: ${e.toString()}',
         statusCode: 0,
       );
     }

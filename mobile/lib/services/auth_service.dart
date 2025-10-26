@@ -5,7 +5,11 @@ import 'api_client.dart';
 import '../utils/constants.dart';
 
 class AuthService {
-  final ApiClient _apiClient = ApiClient();
+  late final ApiClient _apiClient;
+
+  AuthService() {
+    _apiClient = ApiClient(getTokenCallback: getToken);
+  }
 
   Future<void> _saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -36,32 +40,46 @@ class AuthService {
     String password, {
     String role = 'CUSTOMER',
   }) async {
-    final response = await _apiClient.post<Map<String, dynamic>>(
-      AppConstants.authRegister,
-      {'email': email, 'password': password, 'role': role},
-      requiresAuth: false,
-    );
+    try {
+      final response = await _apiClient.post<Map<String, dynamic>>(
+        AppConstants.authRegister,
+        {'email': email, 'password': password, 'role': role},
+        requiresAuth: false,
+      );
 
-    final user = User.fromJson(response['user']);
-    await _saveUser(user);
+      print('Register response: $response'); // Debug logging
+      final user = User.fromJson(response['user']);
+      await _saveUser(user);
 
-    return user;
+      print('Registration successful, user: ${user.email}'); // Debug logging
+      return user;
+    } catch (e) {
+      print('Register error: $e'); // Debug logging
+      rethrow;
+    }
   }
 
   Future<User> login(String email, String password) async {
-    final response = await _apiClient.post<Map<String, dynamic>>(
-      AppConstants.authLogin,
-      {'email': email, 'password': password},
-      requiresAuth: false,
-    );
+    try {
+      final response = await _apiClient.post<Map<String, dynamic>>(
+        AppConstants.authLogin,
+        {'email': email, 'password': password},
+        requiresAuth: false,
+      );
 
-    final token = response['token'] as String;
-    final user = User.fromJson(response['user']);
+      print('Login response: $response'); // Debug logging
+      final token = response['token'] as String;
+      final user = User.fromJson(response['user']);
 
-    await _saveToken(token);
-    await _saveUser(user);
+      await _saveToken(token);
+      await _saveUser(user);
 
-    return user;
+      print('Login successful, user: ${user.email}'); // Debug logging
+      return user;
+    } catch (e) {
+      print('Login error: $e'); // Debug logging
+      rethrow;
+    }
   }
 
   Future<void> logout() async {
