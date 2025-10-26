@@ -75,8 +75,10 @@ export const setupSocketHandlers = (io: Server) => {
             },
           });
 
-          // Broadcast user message
-          io.to(conversationId).emit("new_message", userMessage);
+          // Broadcast user message to others (not to sender)
+          socket.to(conversationId).emit("new_message", userMessage);
+          // Send confirmation back to sender
+          socket.emit("new_message", userMessage);
 
           // Emit typing indicator
           io.to(conversationId).emit("typing_indicator", {

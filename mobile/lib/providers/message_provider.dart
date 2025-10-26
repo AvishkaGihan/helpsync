@@ -30,7 +30,23 @@ class MessageProvider with ChangeNotifier {
 
   void _initializeSocketListeners() {
     _socketService.messageStream.listen((message) {
-      _messages.add(message);
+      // For USER messages from server, replace the optimistic temp message
+      if (message.senderType == 'USER') {
+        final tempIndex = _messages.indexWhere((m) => m.id.startsWith('temp-'));
+        if (tempIndex != -1) {
+          // Replace temp message with real one
+          _messages[tempIndex] = message;
+        } else {
+          // No temp message found, just add it
+          _messages.add(message);
+        }
+      } else {
+        // For AI or HUMAN_AGENT messages, just add them
+        final messageExists = _messages.any((m) => m.id == message.id);
+        if (!messageExists) {
+          _messages.add(message);
+        }
+      }
       _isTyping = false;
       notifyListeners();
     });
