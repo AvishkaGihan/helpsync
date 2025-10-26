@@ -1,10 +1,16 @@
 import '../models/conversation.dart';
 import '../models/message.dart';
 import 'api_client.dart';
+import 'auth_service.dart';
 import '../utils/constants.dart';
 
 class ConversationService {
-  final ApiClient _apiClient = ApiClient();
+  late final ApiClient _apiClient;
+  final AuthService _authService = AuthService();
+
+  ConversationService() {
+    _apiClient = ApiClient(getTokenCallback: _authService.getToken);
+  }
 
   Future<Conversation> createConversation({String? title}) async {
     final response = await _apiClient.post<Map<String, dynamic>>(

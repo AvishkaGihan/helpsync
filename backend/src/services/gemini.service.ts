@@ -23,7 +23,7 @@ export class GeminiService {
         language
       );
       const result = await this.genAI.models.generateContent({
-        model: "gemini-pro",
+        model: "gemini-2.5-flash",
         contents: prompt,
       });
       return result.text || "";
@@ -67,7 +67,7 @@ Text: "${text}"
 Language code:`;
 
       const result = await this.genAI.models.generateContent({
-        model: "gemini-pro",
+        model: "gemini-2.5-flash",
         contents: prompt,
       });
       const langCode = (result.text || "").trim().toLowerCase();
