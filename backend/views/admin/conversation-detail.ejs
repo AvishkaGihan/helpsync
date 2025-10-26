@@ -1,0 +1,87 @@
+<%
+  const body = `
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/admin/conversations">Conversations</a></li>
+        <li class="breadcrumb-item active">Conversation #${conversation.id.substring(0, 8)}</li>
+      </ol>
+    </nav>
+
+    <div class="row">
+      <div class="col-md-8">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5>${conversation.title}</h5>
+          </div>
+          <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+            ${conversation.messages.map(msg => `
+              <div class="mb-3 ${msg.senderType === 'USER' ? 'text-end' : ''}">
+                <div class="d-inline-block ${
+                  msg.senderType === 'USER' ? 'bg-primary text-white' : 'bg-light'
+                } rounded p-2 ${msg.senderType === 'USER' ? '' : 'text-start'}">
+                  <small class="text-muted d-block">
+                    ${msg.senderType} ${msg.sentiment ?
+                      `<span class="badge bg-${
+                        msg.sentiment === 'positive' ? 'success' :
+                        msg.sentiment === 'negative' ? 'danger' : 'secondary'
+                      }">${msg.sentiment}</span>` : ''
+                    }
+                  </small>
+                  <p class="mb-1">${msg.content}</p>
+                  <small class="text-muted">
+                    ${new Date(msg.createdAt).toLocaleString()}
+                  </small>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6>Conversation Info</h6>
+          </div>
+          <div class="card-body">
+            <p><strong>Customer:</strong> ${conversation.user.email}</p>
+            <p><strong>Status:</strong>
+              <span class="badge bg-${
+                conversation.status === 'ESCALATED' ? 'danger' :
+                conversation.status === 'RESOLVED' ? 'success' : 'primary'
+              }">
+                ${conversation.status}
+              </span>
+            </p>
+            <p><strong>Language:</strong> ${conversation.language}</p>
+            <p><strong>Created:</strong> ${new Date(conversation.createdAt).toLocaleString()}</p>
+            ${conversation.escalatedAt ? `
+              <p><strong>Escalated:</strong> ${new Date(conversation.escalatedAt).toLocaleString()}</p>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h6>Actions</h6>
+          </div>
+          <div class="card-body">
+            <form method="POST" action="/admin/conversations/${conversation.id}/status">
+              <div class="mb-3">
+                <label for="status" class="form-label">Update Status</label>
+                <select class="form-control" id="status" name="status" required>
+                  <option value="" disabled>Select status</option>
+                  <option value="OPEN" ${conversation.status === 'OPEN' ? 'selected' : ''}>Open</option>
+                  <option value="ESCALATED" ${conversation.status === 'ESCALATED' ? 'selected' : ''}>Escalated</option>
+                  <option value="RESOLVED" ${conversation.status === 'RESOLVED' ? 'selected' : ''}>Resolved</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm w-100">Update Status</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+%>
+<%- include('../layouts/admin', { body, adminEmail }) %>

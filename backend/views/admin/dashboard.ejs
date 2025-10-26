@@ -1,0 +1,57 @@
+<%
+  const body = `
+    <h1 class="mb-4">Dashboard</h1>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="card text-white bg-primary">
+          <div class="card-body">
+            <h5 class="card-title">Active Conversations</h5>
+            <p class="display-4">${metrics.activeConversations}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-success">
+          <div class="card-body">
+            <h5 class="card-title">Total Messages</h5>
+            <p class="display-4">${metrics.totalMessages}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-info">
+          <div class="card-body">
+            <h5 class="card-title">Resolution Rate</h5>
+            <p class="display-4">${metrics.resolutionRate}%</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-warning">
+          <div class="card-body">
+            <h5 class="card-title">Escalations</h5>
+            <p class="display-4">${metrics.escalations}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Quick Actions</h5>
+            <a href="/admin/conversations" class="btn btn-primary me-2">
+              <i class="bi bi-chat-left-text"></i> View All Conversations
+            </a>
+            <a href="/admin/knowledge-base" class="btn btn-secondary">
+              <i class="bi bi-book"></i> Manage Knowledge Base
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+%>
+<%- include('../layouts/admin', { body, adminEmail }) %>

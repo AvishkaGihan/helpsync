@@ -6,16 +6,16 @@ import { Server } from "socket.io";
 import session from "express-session";
 
 import { logger } from "./lib/logger";
-// import { setupSocketHandlers } from "./socket/chat.handler";
+import { setupSocketHandlers } from "./socket/chat.handler";
 
 // Routes
-// import authRoutes from "./routes/auth.routes";
-// import conversationRoutes from "./routes/conversation.routes";
-// import knowledgeBaseRoutes from "./routes/knowledge-base.routes";
-// import paymentRoutes from "./routes/payment.routes";
-// import analyticsRoutes from "./routes/analytics.routes";
-// import healthRoutes from "./routes/health.routes";
-// import adminRoutes from "./routes/admin.routes";
+import authRoutes from "./routes/auth.routes";
+import conversationRoutes from "./routes/conversation.routes";
+import knowledgeBaseRoutes from "./routes/knowledge-base.routes";
+import paymentRoutes from "./routes/payment.routes";
+import analyticsRoutes from "./routes/analytics.routes";
+import healthRoutes from "./routes/health.routes";
+import adminRoutes from "./routes/admin.routes";
 
 // Middleware
 import { errorHandler } from "./middleware/error.middleware";
@@ -57,13 +57,13 @@ app.set("views", "./views");
 app.use(express.static("public"));
 
 // API Routes
-// app.use("/api/auth", authRoutes);
-// app.use("/api/conversations", conversationRoutes);
-// app.use("/api/knowledge-base", knowledgeBaseRoutes);
-// app.use("/api/payments", paymentRoutes);
-// app.use("/api/analytics", analyticsRoutes);
-// app.use("/api/health", healthRoutes);
-// app.use("/admin", adminRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/conversations", conversationRoutes);
+app.use("/api/knowledge-base", knowledgeBaseRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/health", healthRoutes);
+app.use("/admin", adminRoutes);
 
 // Root route
 app.get("/", (req, res) => {
@@ -75,7 +75,7 @@ app.get("/", (req, res) => {
 });
 
 // Socket.io setup
-// setupSocketHandlers(io);
+setupSocketHandlers(io);
 
 // Error handling
 app.use(errorHandler);

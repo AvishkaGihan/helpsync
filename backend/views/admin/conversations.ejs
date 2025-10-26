@@ -1,0 +1,50 @@
+<%
+  const body = `
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>Conversations</h1>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Messages</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${conversations.map(conv => `
+                <tr>
+                  <td>${conv.title}</td>
+                  <td>${conv.user.email}</td>
+                  <td>
+                    <span class="badge bg-${
+                      conv.status === 'ESCALATED' ? 'danger' :
+                      conv.status === 'RESOLVED' ? 'success' : 'primary'
+                    }">
+                      ${conv.status}
+                    </span>
+                  </td>
+                  <td>${conv._count.messages}</td>
+                  <td>${new Date(conv.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <a href="/admin/conversations/${conv.id}" class="btn btn-sm btn-outline-primary">
+                      View
+                    </a>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+%>
+<%- include('../layouts/admin', { body, adminEmail }) %>
