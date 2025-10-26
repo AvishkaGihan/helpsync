@@ -1,21 +1,26 @@
 import express from "express";
 import {
-  getArticles,
-  getArticle,
-  searchArticles,
-  createArticle,
-  updateArticle,
-  deleteArticle,
-} from "../controllers/knowledge-base.controller";
+  createConversation,
+  getConversations,
+  getConversation,
+  updateConversation,
+  getMessages,
+  getEscalatedConversations,
+} from "../controllers/conversation.controller";
 import { authenticateToken, requireRole } from "../middleware/auth.middleware";
 
 const router = express.Router();
 
-router.get("/", getArticles);
-router.get("/search", searchArticles);
-router.get("/:id", getArticle);
-router.post("/", authenticateToken, requireRole(["ADMIN"]), createArticle);
-router.put("/:id", authenticateToken, requireRole(["ADMIN"]), updateArticle);
-router.delete("/:id", authenticateToken, requireRole(["ADMIN"]), deleteArticle);
+router.post("/", authenticateToken, createConversation);
+router.get("/", authenticateToken, getConversations);
+router.get(
+  "/escalated",
+  authenticateToken,
+  requireRole(["ADMIN"]),
+  getEscalatedConversations
+);
+router.get("/:id", authenticateToken, getConversation);
+router.patch("/:id", authenticateToken, updateConversation);
+router.get("/:id/messages", authenticateToken, getMessages);
 
 export default router;
