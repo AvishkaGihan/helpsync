@@ -1,0 +1,20 @@
+# Node / Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/coverage/
+
+# Flutter / Mobile
+mobile/.dart_tool/
+mobile/.idea/
+mobile/.metadata
+mobile/build/
+mobile/*.iml
+mobile/*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE-specific
+.vscode/
