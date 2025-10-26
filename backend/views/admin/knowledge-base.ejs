@@ -1,0 +1,313 @@
+<%
+  const body = `
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>Knowledge Base</h1>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createArticleModal">
+        <i class="bi bi-plus-circle"></i> Create Article
+      </button>
+    </div>
+
+    ${articles.length === 0 ? `
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No articles found. Create your first knowledge base article to get started.
+      </div>
+    ` : `
+      <div class="row g-4">
+        ${articles.map(article => `
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h5 class="card-title">${article.title}</h5>
+                  ${article.category ? `
+                    <span class="badge bg-secondary">${article.category}</span>
+                  ` : ''}
+                </div>
+                <p class="card-text text-muted small">
+                  ${article.content.substring(0, 150)}${article.content.length > 150 ? '...' : ''}
+                </p>
+                ${article.keywords && article.keywords.length > 0 ? `
+                  <div class="mb-3">
+                    ${article.keywords.map(keyword => `
+                      <span class="badge bg-light text-dark me-1">${keyword}</span>
+                    `).join('')}
+                  </div>
+                ` : ''}
+                <div class="text-muted small mb-3">
+                  <i class="bi bi-calendar"></i> ${new Date(article.createdAt).toLocaleDateString()}
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-primary view-article-btn"
+                    data-id="${article.id}"
+                    data-title="${article.title.replace(/"/g, '&quot;')}"
+                    data-content="${article.content.replace(/"/g, '&quot;')}"
+                    data-category="${(article.category || '').replace(/"/g, '&quot;')}"
+                    data-keywords="${(article.keywords || []).join(',')}">
+                    <i class="bi bi-eye"></i> View
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary edit-article-btn"
+                    data-id="${article.id}"
+                    data-title="${article.title.replace(/"/g, '&quot;')}"
+                    data-content="${article.content.replace(/"/g, '&quot;')}"
+                    data-category="${(article.category || '').replace(/"/g, '&quot;')}"
+                    data-keywords="${(article.keywords || []).join(',')}">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger delete-article-btn"
+                    data-id="${article.id}"
+                    data-title="${article.title.replace(/"/g, '&quot;')}">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+
+    <!-- Create Article Modal -->
+    <div class="modal fade" id="createArticleModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create New Article</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form id="createArticleForm">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="createTitle" class="form-label">Title *</label>
+                <input type="text" class="form-control" id="createTitle" required>
+              </div>
+              <div class="mb-3">
+                <label for="createCategory" class="form-label">Category</label>
+                <input type="text" class="form-control" id="createCategory" placeholder="e.g., Billing, Technical Support">
+              </div>
+              <div class="mb-3">
+                <label for="createContent" class="form-label">Content *</label>
+                <textarea class="form-control" id="createContent" rows="8" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="createKeywords" class="form-label">Keywords</label>
+                <input type="text" class="form-control" id="createKeywords" placeholder="Comma-separated keywords">
+                <small class="text-muted">Enter keywords separated by commas (e.g., payment, invoice, billing)</small>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Create Article</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Article Modal -->
+    <div class="modal fade" id="viewArticleModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="viewArticleTitle"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div id="viewArticleCategory" class="mb-2"></div>
+            <div id="viewArticleContent" class="mb-3" style="white-space: pre-wrap;"></div>
+            <div id="viewArticleKeywords"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Article Modal -->
+    <div class="modal fade" id="editArticleModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Article</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form id="editArticleForm">
+            <input type="hidden" id="editArticleId">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="editTitle" class="form-label">Title *</label>
+                <input type="text" class="form-control" id="editTitle" required>
+              </div>
+              <div class="mb-3">
+                <label for="editCategory" class="form-label">Category</label>
+                <input type="text" class="form-control" id="editCategory" placeholder="e.g., Billing, Technical Support">
+              </div>
+              <div class="mb-3">
+                <label for="editContent" class="form-label">Content *</label>
+                <textarea class="form-control" id="editContent" rows="8" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="editKeywords" class="form-label">Keywords</label>
+                <input type="text" class="form-control" id="editKeywords" placeholder="Comma-separated keywords">
+                <small class="text-muted">Enter keywords separated by commas</small>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Create Article
+      document.getElementById('createArticleForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const title = document.getElementById('createTitle').value;
+        const category = document.getElementById('createCategory').value;
+        const content = document.getElementById('createContent').value;
+        const keywordsStr = document.getElementById('createKeywords').value;
+        const keywords = keywordsStr ? keywordsStr.split(',').map(k => k.trim()).filter(k => k) : [];
+
+        try {
+          const response = await fetch('/admin/api/knowledge-base', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ title, category: category || null, content, keywords })
+          });
+
+          if (response.ok) {
+            location.reload();
+          } else {
+            const error = await response.json();
+            alert('Failed to create article: ' + (error.error?.message || 'Unknown error'));
+          }
+        } catch (error) {
+          alert('Failed to create article: ' + error.message);
+        }
+      });
+
+      // View Article - Event delegation
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-article-btn')) {
+          const btn = e.target.closest('.view-article-btn');
+          const id = btn.dataset.id;
+          const title = btn.dataset.title;
+          const content = btn.dataset.content;
+          const category = btn.dataset.category;
+          const keywordsStr = btn.dataset.keywords || '';
+          const keywords = keywordsStr ? keywordsStr.split(',').filter(k => k) : [];
+
+          document.getElementById('viewArticleTitle').textContent = title;
+          document.getElementById('viewArticleContent').textContent = content;
+
+          const categoryEl = document.getElementById('viewArticleCategory');
+          if (category) {
+            categoryEl.innerHTML = '<span class="badge bg-secondary">' + category + '</span>';
+          } else {
+            categoryEl.innerHTML = '';
+          }
+
+          const keywordsEl = document.getElementById('viewArticleKeywords');
+          if (keywords && keywords.length > 0) {
+            keywordsEl.innerHTML = '<div class="mb-2"><strong>Keywords:</strong></div>' +
+              keywords.map(k => '<span class="badge bg-light text-dark me-1">' + k + '</span>').join('');
+          } else {
+            keywordsEl.innerHTML = '';
+          }
+
+          new bootstrap.Modal(document.getElementById('viewArticleModal')).show();
+        }
+      });
+
+      // Edit Article - Event delegation
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.edit-article-btn')) {
+          const btn = e.target.closest('.edit-article-btn');
+          const id = btn.dataset.id;
+          const title = btn.dataset.title;
+          const content = btn.dataset.content;
+          const category = btn.dataset.category;
+          const keywordsStr = btn.dataset.keywords || '';
+          const keywords = keywordsStr ? keywordsStr.split(',').filter(k => k) : [];
+
+          document.getElementById('editArticleId').value = id;
+          document.getElementById('editTitle').value = title;
+          document.getElementById('editCategory').value = category || '';
+          document.getElementById('editContent').value = content;
+          document.getElementById('editKeywords').value = keywords && keywords.length > 0 ? keywords.join(', ') : '';
+
+          new bootstrap.Modal(document.getElementById('editArticleModal')).show();
+        }
+      });
+
+      document.getElementById('editArticleForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('editArticleId').value;
+        const title = document.getElementById('editTitle').value;
+        const category = document.getElementById('editCategory').value;
+        const content = document.getElementById('editContent').value;
+        const keywordsStr = document.getElementById('editKeywords').value;
+        const keywords = keywordsStr ? keywordsStr.split(',').map(k => k.trim()).filter(k => k) : [];
+
+        try {
+          const response = await fetch('/admin/api/knowledge-base/' + id, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ title, category: category || null, content, keywords })
+          });
+
+          if (response.ok) {
+            location.reload();
+          } else {
+            const error = await response.json();
+            alert('Failed to update article: ' + (error.error?.message || 'Unknown error'));
+          }
+        } catch (error) {
+          alert('Failed to update article: ' + error.message);
+        }
+      });
+
+      // Delete Article - Event delegation
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.delete-article-btn')) {
+          const btn = e.target.closest('.delete-article-btn');
+          const id = btn.dataset.id;
+          const title = btn.dataset.title;
+
+          if (!confirm('Are you sure you want to delete "' + title + '"? This action cannot be undone.')) {
+            return;
+          }
+
+          fetch('/admin/api/knowledge-base/' + id, {
+            method: 'DELETE',
+            credentials: 'include'
+          })
+          .then(response => {
+            if (response.ok || response.status === 204) {
+              location.reload();
+            } else {
+              return response.json().then(error => {
+                throw new Error(error.error?.message || 'Failed to delete article');
+              });
+            }
+          })
+          .catch(error => {
+            alert('Failed to delete article: ' + error.message);
+          });
+        }
+      });
+    </script>
+  `;
+%>
+<%- include('../layouts/admin', { body, adminEmail }) %>

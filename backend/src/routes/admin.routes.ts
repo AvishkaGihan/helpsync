@@ -154,6 +154,91 @@ router.get("/knowledge-base", isAuthenticated, async (req, res) => {
   }
 });
 
+// Knowledge base API routes (session-based for admin panel)
+router.post("/api/knowledge-base", isAuthenticated, async (req, res) => {
+  try {
+    const { title, content, category, keywords } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Title and content are required",
+        },
+      });
+    }
+
+    const adminId = req.session.adminId!; // Guaranteed by isAuthenticated middleware
+
+    const article = await prisma.knowledgeBaseArticle.create({
+      data: {
+        title,
+        content,
+        category: category || null,
+        keywords: keywords || [],
+        createdBy: adminId,
+      },
+    });
+
+    res.status(201).json(article);
+  } catch (error) {
+    console.error("Error creating article:", error);
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Failed to create article",
+      },
+    });
+  }
+});
+
+router.put("/api/knowledge-base/:id", isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, content, category, keywords } = req.body;
+
+    const article = await prisma.knowledgeBaseArticle.update({
+      where: { id },
+      data: {
+        ...(title && { title }),
+        ...(content && { content }),
+        ...(category !== undefined && { category }),
+        ...(keywords && { keywords }),
+      },
+    });
+
+    res.json(article);
+  } catch (error) {
+    console.error("Error updating article:", error);
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Failed to update article",
+      },
+    });
+  }
+});
+
+router.delete("/api/knowledge-base/:id", isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.knowledgeBaseArticle.delete({
+      where: { id },
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting article:", error);
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Failed to delete article",
+      },
+    });
+  }
+});
+
 // Logout
 router.get("/logout", (req, res) => {
   req.session.destroy(() => {
