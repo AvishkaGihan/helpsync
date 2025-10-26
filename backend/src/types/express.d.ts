@@ -1,4 +1,4 @@
-import { UserRole } from "@prisma/client";
+import type { UserRole } from "@prisma/client";
 
 declare global {
   namespace Express {
@@ -9,5 +9,12 @@ declare global {
         role: UserRole;
       };
     }
+  }
+}
+
+declare module "express-session" {
+  interface SessionData {
+    adminId: string;
+    adminEmail: string;
   }
 }
